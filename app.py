@@ -89,7 +89,7 @@ def print_time( threadName, token):
     "maxMarketSlippagePercent":"50",
     "maxExecutionSlippagePercent":"10"
     },
-                    'apikey': 'd09529fa-23b5-456b-996b-d141ce5d4640',
+                    'apiKey': 'd09529fa-23b5-456b-996b-d141ce5d4640',
                     'partnerContract': '0x0a92bcab3019839ea1a8349fa5c940e38e9c88b9',
                     'address': myaddress}
             if token['symbol'] not in blacklist:
@@ -110,7 +110,7 @@ def print_time( threadName, token):
                     "maxMarketSlippagePercent":"50",
                     "maxExecutionSlippagePercent":"10"
                     },
-                    'apikey': 'd09529fa-23b5-456b-996b-d141ce5d4640',
+                    'apiKey': 'd09529fa-23b5-456b-996b-d141ce5d4640',
                     'partnerContract': '0x0a92bcab3019839ea1a8349fa5c940e38e9c88b9'}
 
                             if token['symbol'] not in blacklist:
