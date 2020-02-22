@@ -102,7 +102,7 @@ def print_time( threadName, token):
                             total = 0
                             for o in orders:
                                 total = total + float(o['destinationAmount'])
-                            print(total)
+                            #print(total)
                             payload2 = {"swap":{ 
                     "sourceAsset":token['address'],
                     "destinationAsset":"ETH",
@@ -119,19 +119,17 @@ def print_time( threadName, token):
                                   #print(r2)
                                   if 'success' not in r2:
                                       if 'Endpoint' in r2['message']:
-                                          print(r2['message'])
+                                          #print(r2['message'])
                                           time.sleep(randrange(15))
-                                      else:
-                                          print(r2)
-                                          print ('no success')
+                                      
                                   elif r2['success']:
-                                      print(token['symbol'])
+                                      #print(token['symbol'])
                                       if 'response' in r2:
                                           
 
 
-                                          sym = r2['response']['summary'][0]['destinationAsset']['symbol']
-                                          
+                                          sym = token['symbol'] 
+                                          print(sym)
                                           if sym not in syms:
                                               syms[sym] = 0
 
@@ -147,10 +145,10 @@ def print_time( threadName, token):
 
                                           
                                           arbpotential = tx1price2 / tx1price
-                                          print(arbpotential)
+                                          #print(arbpotential)
                                           arb = False
                                           if arbpotential > 1:
-                                              print(arbpotential)
+                                              #print(arbpotential)
                                               arb = True
                                           if sym not in syms:
                                               syms[sym] = 0
@@ -228,7 +226,8 @@ def print_time( threadName, token):
                                       else:
                                           print(r2)
         except Exception as e:
-            print(e)
+            xyz = 1
+            #print(e)
 
                      
                         
