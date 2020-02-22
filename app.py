@@ -9,13 +9,12 @@ from random import randrange
 from web3 import Web3
 
 with open('config.json') as json_file:
-    data = json.load(json_file)
-    for p in data['people']:
-        gethIPC = p['gethIPC']
-        myaddress = p['myaddress']
-        ethAmount = p['ethAmount']
-        gasPrice = p['gasPrice']
-        ethKey = p['ethKey']
+    p = json.load(json_file)
+    gethIPC = p['gethIPC']
+    myaddress = p['myaddress']
+    ethAmount = p['ethAmount']
+    gasPrice = p['gasPrice']
+    ethKey = p['ethKey']
 my_provider = Web3.IPCProvider(gethIPC)
 
 w3 = Web3(my_provider)
@@ -77,7 +76,7 @@ blacklist = []
 def print_time( threadName, token):
     while 1:
         try:
-            time.sleep(randrange(thelength)/ 3)
+            time.sleep(randrange(thelength))
             url = 'https://api.totle.com/swap'
             headers = {'content-type': 'application/json',
     "Authorization": "Bearer " + 'd09529fa-23b5-456b-996b-d141ce5d4640'
@@ -91,7 +90,7 @@ def print_time( threadName, token):
     "maxExecutionSlippagePercent":"10"
     },
                     'apikey': 'd09529fa-23b5-456b-996b-d141ce5d4640',
-                    'partnerContract': '0x3b1543beb41d6f226861c516ed5f0e998244d0a0',
+                    'partnerContract': '0x0a92bcab3019839ea1a8349fa5c940e38e9c88b9',
                     'address': myaddress}
             if token['symbol'] not in blacklist:
 
@@ -112,7 +111,7 @@ def print_time( threadName, token):
                     "maxExecutionSlippagePercent":"10"
                     },
                     'apikey': 'd09529fa-23b5-456b-996b-d141ce5d4640',
-                    'partnerContract': '0x3b1543beb41d6f226861c516ed5f0e998244d0a0'}
+                    'partnerContract': '0x0a92bcab3019839ea1a8349fa5c940e38e9c88b9'}
 
                             if token['symbol'] not in blacklist:
                               
@@ -173,7 +172,6 @@ def print_time( threadName, token):
                                               f1.close()
                                               tx1 = (r['response']['transactions'])
                                               tx = (r2['response']['transactions'])
-                                              w3.geth.personal.unlockAccount(myaddress, 'w0rdp4ss')
                                               for t in tx1:
                                                   print(t)                   
 
@@ -212,7 +210,6 @@ def print_time( threadName, token):
 
                                                   w3.eth.sendRawTransaction(signed.rawTransaction)  
                                               
-                                              w3.geth.personal.lockAccount(myaddress)
 
                                              #print(price2 / price * 100)
                                               #print(r2['response']['summary'][0]['trades'][0]['orders'][0]['exchange'])
