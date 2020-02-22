@@ -1,0 +1,5 @@
+{"gethIPC": "~/.ethereum/",
+"myaddress": "0x8545d4515e27c092bd25d30EB1deb4fDF100AF92",
+"ethAmount": 0.05,
+"gasPrice":50000000000,
+"ethKey": "secret"}
