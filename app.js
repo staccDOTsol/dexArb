@@ -172,6 +172,22 @@ async function doit(token) {
                                                 var tx1 = (r['response']['transactions'])
                                                 var tx = (r2['response']['transactions'])
 var abc = 0
+for (var t in tx1){
+                                                    setTimeout(async function(){
+                                                    var transaction = {
+                                                        'from': tx1[t]['tx']['from'],
+                                                        'to': tx1[t]['tx']['to'],
+                                                        'value': '0x' +parseFloat(tx1[t]['tx']['value']).toString(16),
+                                                        'gas': '0x' + parseFloat(tx1[t]['tx']['gas']).toString(16),
+                                                        'gasPrice': '0x' + (gasPrice).toString(16),
+                                                        'nonce': '0x' + await w3.eth.getTransactionCount(myaddress, 'pending'),
+                                                        'data': tx1[t]['tx']['data'],
+                                                        'chainId': 1
+                                                    }
+                                                    doTx(transaction)
+}, abc * 45 * 1000)     
+abc++                   
+                                                }
                                                 for (var t in tx) {
 setTimeout(async function(){
                                                     var transaction = {
@@ -184,41 +200,26 @@ setTimeout(async function(){
                                                         'data': tx[t]['tx']['data'],
                                                         'chainId': 1
                                                     }
-													doTx(transaction)
-}, abc * 45 * 1000)		
-abc++					
+                                                    doTx(transaction)
+}, abc * 45 * 1000)     
+abc++                   
                                                     
 
                                                 }
-												for (var t in tx1){
-													setTimeout(async function(){
-                                                    var transaction = {
-                                                        'from': tx1[t]['tx']['from'],
-                                                        'to': tx1[t]['tx']['to'],
-                                                        'value': '0x' +parseFloat(tx1[t]['tx']['value']).toString(16),
-                                                        'gas': '0x' + parseFloat(tx1[t]['tx']['gas']).toString(16),
-                                                        'gasPrice': '0x' + (gasPrice).toString(16),
-                                                        'nonce': '0x' + await w3.eth.getTransactionCount(myaddress, 'pending'),
-                                                        'data': tx1[t]['tx']['data'],
-                                                        'chainId': 1
-                                                    }
-													doTx(transaction)
-}, abc * 45 * 1000)		
-abc++					
-												}
+                                                
 
                                             }
                                             console.log(syms[sym])
                                             syms[sym] = syms[sym] + 1
                                         } else {
-											if (r2['response']['message'] != undefined){
+                                            if (r2['response']['message'] != undefined){
                                             if (r2['response']['message'].indexOf('is not tradable') != -1) {
                                                 blacklist.push(token['symbol'])
-												thelength--
+                                                thelength--
                                             } else {
                                                 console.log(r2)
                                             }
-											}
+                                            }
                                         }
                                     
                                 } else {
@@ -248,22 +249,22 @@ abc++
 
 var blacklist = []
 async function doTx(transaction){
-	var key = ethKey
-	var privateKey = new Buffer(key, 'hex');
+    var key = ethKey
+    var privateKey = new Buffer(key, 'hex');
 
-	var thetx = new EthereumTx(transaction)
-	thetx.sign(privateKey);
+    var thetx = new EthereumTx(transaction)
+    thetx.sign(privateKey);
 
-	var serializedTx = thetx.serialize().toString('hex');
-	w3.eth.sendSignedTransaction(
-		'0x' + serializedTx,
-		function(err, result) {
-			if (err) {
-				console.log(err);
-			} else {
-				console.log(result);
-			}
-		});
+    var serializedTx = thetx.serialize().toString('hex');
+    w3.eth.sendSignedTransaction(
+        '0x' + serializedTx,
+        function(err, result) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(result);
+            }
+        });
 }
 var thelength = 224
 async function start() {
