@@ -7,10 +7,15 @@ const EthereumTx = require('ethereumjs-tx').Transaction
 var first = true
 
 var p = JSON.parse(fs.readFileSync('config.json', 'utf8'));
-
+var doable = []
 var gethIPC = p['gethIPC']
 var myaddress = p['myaddress']
-var ethAmount = p['ethAmount']
+var tradeTokens = p['tradeTokens']
+var tradeTokensDecimals = p['tradeTokensDecimals']
+var coinGeckoNames = p['coinGeckoNames']
+var tradeContractAbis = p['tradeContractAbis']
+var tradeContractAddresses = p['tradeContractAddresses']
+var tradePercent = p['tradePercent']
 var gasPrice = p['gasPrice']
 var ethKey = p['ethKey']
 console.log(gethIPC)
@@ -24,12 +29,90 @@ var ignore = []
 var ignore2 = []
 var errcount = 0
 
+const CoinGecko = require('coingecko-api');
 
+//2. Initiate the CoinGecko API Client
+const CoinGeckoClient = new CoinGecko();
+var prices = {}
+
+async function cg(){
+    
+    try{
+let data = await CoinGeckoClient.simple.price({
+    ids: ['ethereum','dai','wrapped-bitcoin','compound-dai', 'sai','compound-sai'],
+    vs_currencies: [ 'eth'],
+});
+console.log(data)
+
+for (var c in  data.data){
+    prices[c] = data.data[c].eth
+}
+prices['compound-dai'] = prices['compound-sai'] / 1.045310179747434
+console.log(prices)
+}
+catch (err){
+    prices = {
+  'compound-sai': 0.00007863,
+  dai: 0.00365832,
+  ethereum: 1,
+  sai: 0.00365075,
+  'wrapped-bitcoin': 36.418875,
+  'compound-dai': 0.00007522169163128063
+}
+}
+}
+cg()
+setInterval(function(){
+    cg()
+}, 5 * 60 * 1000)
 async function doit(token) {
+    
+    if (doable.length > 10){
+        thelength = doable.length * tradeTokens.length
+    }
     setTimeout(function() {
         doit(token)
     }, thelength * 1000)
     setTimeout(async function() {
+var winBal = 0
+var winBalDec
+    for (var tok in tradeTokens){
+        if (tradeTokens[tok] == 'ETH'){
+        var bal = await w3.eth.getBalance(myaddress)
+        
+var thebal = bal
+        bal = bal / Math.pow(10, 18)
+        //console.log('eth bal: ' + bal)
+        bal = prices['ethereum'] * bal
+    //  console.log('eth usd: ' + bal)
+        if (bal > winBal){
+            winBal = bal
+            winBalDec = thebal
+            thetoken = tok
+        }
+        }
+        
+        else {
+        
+    var ContractAddress = tradeContractAddresses[tok]
+    var abi = tradeContractAbis[tok]
+var Contract = new w3.eth.Contract(abi, ContractAddress)
+var bal = await (Contract.methods.balanceOf(myaddress).call());
+var thebal = bal
+bal = bal / Math.pow(10, tradeTokensDecimals[tok])
+//console.log(tradeTokens[tok] + ' bal: ' + bal)
+bal = bal * prices[coinGeckoNames[tok]]
+//console.log('usd ' + tradeTokens[tok] + ' bal: ' + bal)
+        if (bal > winBal){
+            winBal = bal
+            thetoken = tok
+            winBalDec = thebal
+        }
+        }
+    }
+    //console.log('winBal: ' + winBal)
+    //console.log('winTok: ' + tradeTokens[thetoken])
+    //console.log('winBalDec: ' + winBalDec)
             try {
                 var url = 'https://api.totle.com/swap'
                 var headers = {
@@ -39,9 +122,9 @@ async function doit(token) {
 
                 var payload = {
                     "swap": {
-                        "sourceAsset": "ETH",
-                        "destinationAsset": token['address'],
-                        "sourceAmount": ethAmount * Math.pow(10, 18),
+                        "sourceAsset": tradeTokens[thetoken],
+                        "destinationAsset": 'DAI',// token['address'],
+                        "sourceAmount": Math.floor(tradePercent * winBalDec),
                         "maxMarketSlippagePercent": "50",
                         "maxExecutionSlippagePercent": "10"
                     },
@@ -64,10 +147,22 @@ async function doit(token) {
                             if (r['response']['summary'] != undefined) {
                                 var total = parseFloat(r['response']['summary'][0]['destinationAmount'])
                                 var orders = r['response']['summary'][0]['trades'][0]['orders']
+                                
+                                var sym = token['symbol']
+                                          //  console.log(sym)
+                                            var arbWins = {}
+                                            var tokWin = {}
+                                            var arbWinR2s = {}
+                                var arbPots = {}
+                                tokWin[sym] = ""
+                                arbPots[sym] = []
+                                arbWins[sym] = -1000
+                                arbWinR2s[sym] = [];
+                                for (var tok in tradeTokens){
                                 var payload2 = {
                                     "swap": {
-                                        "sourceAsset": token['address'],
-                                        "destinationAsset": "ETH",
+                                        "sourceAsset": 'DAI',//token['address'],
+                                        "destinationAsset": tradeTokens[tok],
                                         "sourceAmount": total,
                                         "maxMarketSlippagePercent": "50",
                                         "maxExecutionSlippagePercent": "10"
@@ -76,8 +171,7 @@ async function doit(token) {
                                     'partnerContract': '0x0a92bcab3019839ea1a8349fa5c940e38e9c88b9'
                                 }
 
-                                if (!blacklist.includes(token['symbol'])) {
-                                    options = {
+                                 options = {
                                         method: 'POST',
                                         uri: url,
                                         body: payload2,
@@ -85,15 +179,16 @@ async function doit(token) {
                                         json: true
                                     };
                                     var r2 = await rp(options)
-                                    if (r2['success'] == undefined) {
+                                
+                                                                   
+                                if (r2['success'] == undefined) {
 
                                     } else if (r2['success'] != undefined && r2['response'] != undefined) {
                                         if (r2['response']['summary'] != undefined && r['response']['summary'] != undefined) {
 
 
 
-                                            var sym = token['symbol']
-                                            console.log(sym)
+                                            
                                             if (syms[sym] == undefined) {
                                                 syms[sym] = 0
                                             }
@@ -107,11 +202,12 @@ async function doit(token) {
                                                 fee = fee2
                                             }
 
+                                            //console.log(coinGeckoNames[thetoken])
+                                            //console.log(coinGeckoNames[tok])
+                                            var tx1price = ((parseFloat(r['response']['summary'][0]['sourceAmount'])) / Math.pow(10, tradeTokensDecimals[thetoken])) * prices[coinGeckoNames[thetoken]]
 
-                                            var tx1price = ((parseFloat(r['response']['summary'][0]['sourceAmount'])) / Math.pow(10, 18))
-
-                                            var tx1price2 = (parseFloat(r2['response']['summary'][0]['destinationAmount'])) / Math.pow(10, 18)
-                                            if (myaddress == '0x24E7be68c63B6707f567b933Bdae546c7C94Ff37') {
+                                            var tx1price2 = (parseFloat(r2['response']['summary'][0]['destinationAmount'])) / Math.pow(10, tradeTokensDecimals[tok]) * prices[coinGeckoNames[tok]]
+                                            if (myaddress == '0x2631560Ab696a4562C719fB57327844B972603BA') {
                                                 tx1price2 = tx1price2 * (((1 + fee2 / 100)))
 
                                                 tx1price = tx1price * (1 + fee / 100)
@@ -123,15 +219,34 @@ async function doit(token) {
 
 
                                             var arbpotential = 100 * ((parseFloat(tx1price2) / parseFloat(tx1price) - 1))
-                                            console.log(arbpotential)
-                                            if (arbpotential > biggest) {
-                                                biggest = arbpotential
+                                            //console.log('arb potential: ' + arbpotential)
+                                        arbPots[sym].push(arbpotential)
+                                        //console.log(arbPots[sym])
+                                        if (arbpotential > arbWins[sym]){
+                                            tokWin[sym] = tradeTokens[tok]
+                                            arbWins[sym] = arbpotential
+                                            arbWinR2s[sym] = r2
+                                        
+                                        }
+                                        }
+                                    }
+                                        }      
+                                        if (arbWins[sym] != -1000){
+                                    console.log('arbWin: ' + sym + ': ' + arbWins[sym] + ', tok: ' + tokWin[sym])
+                                        }
+                                if (arbWins[sym] > biggest) {
+                                                biggest = arbWins[sym]
                                             }
-                                            console.log((biggest))
-                                            console.log((blacklist.length))
+                                            if (!doable.includes(sym)){
+                                                doable.push(sym)
+                                            }
+                                            console.log('biggest arb potential to date: ' + (biggest))
+                                            console.log('blacklist length: ' + (blacklist.length))
+                                            
+                                            console.log('tradeable length: ' + (doable.length))
                                             arb = false
-                                            if (arbpotential > 0.05) {
-                                                console.log(arbpotential)
+                                            if (arbWins[sym] > 0.05) {
+                                                console.log(arbWins[sym])
                                                 console.log(tx1price2)
                                                 console.log(tx1price)
                                                 arb = true
@@ -139,7 +254,7 @@ async function doit(token) {
                                             if (syms[sym] == undefined) {
                                                 syms[sym] = 0
                                             }
-                                            if (arbpotential < 0.05 && sym[syms] > 0) {
+                                            if (arbWins[sym] < 0.05 && sym[syms] > 0) {
                                                 try {
                                                     ignore.splice(ignore.indexOf(sym), 1)
 
@@ -149,19 +264,19 @@ async function doit(token) {
                                                 }
 
                                             }
-                                            if (arbpotential > 0.05 && syms[sym] == 0) {
+                                            if (arbWins[sym] > 0.05 && syms[sym] == 0) {
                                                 ignore.push(sym)
 
 
                                                 console.log('length ignore ' + ((ignore.length)))
                                             }
-                                            if ((arbpotential > 0.05 && syms[sym] != 0 && !ignore.includes(sym))){// || first && arbpotential > -1.5) {
+                                            if ((arbWins[sym] > 0.05 && syms[sym] != 0 && !ignore.includes(sym))){// || first && arbWins[sym] > -1.5) {
                                                 first = false
                                                 console.log('arb! ' + sym)
                                                 fs.writeFile("./arbs.json", JSON.stringify({
                                                     'platform': 'totle',
                                                     'symbol': sym,
-                                                    'arb': arbpotential
+                                                    'arb': arbWins[sym]
                                                 }) + '\n', function(err) {
                                                     if (err) {
                                                         return console.log(err);
@@ -170,7 +285,7 @@ async function doit(token) {
                                                 });
 
                                                 var tx1 = (r['response']['transactions'])
-                                                var tx = (r2['response']['transactions'])
+                                                var tx = (arbWinR2s[sym]['response']['transactions'])
 var abc = 0
 for (var t in tx1){
                                                     setTimeout(async function(){
@@ -209,14 +324,18 @@ abc++
                                                 
 
                                             }
-                                            console.log(syms[sym])
                                             syms[sym] = syms[sym] + 1
-                                        } else {
+                                            
+                                            console.log('occurences of symbol: ' + syms[sym])
+                                        }
+                            }                                       else {
                                             if (r2['response']['message'] != undefined){
                                             if (r2['response']['message'].indexOf('is not tradable') != -1) {
                                                 blacklist.push(token['symbol'])
                                                 thelength--
-                                            } else {
+                                            } else { 
+                                            blacklist.push(token['symbol'])
+                                                thelength--
                                                 console.log(r2)
                                             }
                                             }
@@ -227,15 +346,17 @@ abc++
                                         blacklist.push(token['symbol'])
 
                                     } else {
+                                          blacklist.push(token['symbol'])
+                                                thelength--
                                         console.log(r2)
                                     }
                                 }
-                            }
+                            
 
-                        }
+                        
+                    
+                
                     }
-                }
-            }
 
         } catch (err) {
             console.log(err)
@@ -266,7 +387,7 @@ async function doTx(transaction){
             }
         });
 }
-var thelength = 224
+var thelength = 250 * tradeTokens.length
 async function start() {
     r = await rp('https://api.totle.com/tokens')
     r = JSON.parse(r)
