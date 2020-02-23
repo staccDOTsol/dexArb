@@ -98,10 +98,9 @@ def print_time( threadName, token):
                 if 'success' in r:
                     if 'response' in r:
                         if 'summary' in r['response']:
+                            total=float(r['response']['summary'][0]['destinationAmount'])
                             orders = r['response']['summary'][0]['trades'][0]['orders']
-                            total = 0
-                            for o in orders:
-                                total = total + float(o['destinationAmount'])
+                            
                             #print(total)
                             payload2 = {"swap":{ 
                     "sourceAsset":token['address'],
@@ -116,7 +115,6 @@ def print_time( threadName, token):
                             if token['symbol'] not in blacklist:
                               
                                   r2 = requests.post(url, data=json.dumps(payload2), headers=headers).json()
-                                  #print(r2)
                                   if 'success' not in r2:
                                       if 'Endpoint' in r2['message']:
                                           #print(r2['message'])
@@ -137,18 +135,20 @@ def print_time( threadName, token):
                                           for o in os:
                                               fee2 = float(o['fee']['percentage'])
                                               fee = fee2
-                                          tx1price=float(r2['response']['summary'][0]['guaranteedRate']) 
+                                          tx1price=((float(r['response']['summary'][0]['sourceAmount'])) / 10 ** 18)
                                          # tx1price = tx1price * 1.0025 * (1+fee/100)
-                                          tx1price2=(1 / float(r['response']['summary'][0]['guaranteedRate']))
+                                          tx1price2=(float(r2['response']['summary'][0]['destinationAmount'])) / 10 ** 18
                                           #tx1price2=tx1price2* ((1.0025*(1+fee2/100)))
                                           
 
                                           
-                                          arbpotential = tx1price2 / tx1price
-                                          #print(arbpotential)
+                                          arbpotential =  100*((float(tx1price2) / float(tx1price)-1) )
+                                          print(arbpotential)
                                           arb = False
-                                          if arbpotential > 1:
-                                              #print(arbpotential)
+                                          if arbpotential > 0.05:
+                                              print(arbpotential)
+                                              print(tx1price2)
+                                              print(tx1price)
                                               arb = True
                                           if sym not in syms:
                                               syms[sym] = 0
@@ -166,7 +166,7 @@ def print_time( threadName, token):
                                           if arb and syms[sym] != 0 and sym not in ignore:
                                               print('arb! ' + sym)
                                               f1=open('./arbs.json', 'a+')
-                                              f1.write(json.dumps({'playform': 'totle', 'symbol': sym, 'arb': -1*((1-(float(tx1price2) / float(tx1price2))) * 100)} ) + '\n')
+                                              f1.write(json.dumps({'playform': 'totle', 'symbol': sym, 'arb': -1*(1-((float(tx1price) / float(tx1price2)))) * 100} ) + '\n')
                                               f1.close()
                                               tx1 = (r['response']['transactions'])
                                               tx = (r2['response']['transactions'])
@@ -203,7 +203,7 @@ def print_time( threadName, token):
                                                        'chainId': 1
                                                    }
 
-                                                  key = '0x0EA2978FE4998F72ACAB2D7865D6E30E921C4E083B48FE294C2956D425F44CDB'
+                                                  key = ethKey
                                                   signed = w3.eth.account.sign_transaction(transaction, key)
 
                                                   w3.eth.sendRawTransaction(signed.rawTransaction)  
