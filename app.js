@@ -23,7 +23,7 @@ console.log(gethIPC)
 var my_provider = new Web3.providers.HttpProvider(gethIPC)
 
 var w3 = new Web3(my_provider)
-var biggest = -50
+var biggest = -100
 var syms2 = {}
 var syms = {}
 var ignore = []
@@ -149,7 +149,7 @@ bal = bal * prices[coinGeckoNames[tok]]
                                 var orders = r['response']['summary'][0]['trades'][0]['orders']
                                 
                                 var sym = token['symbol']
-                                          //  console.log(sym)
+                                           console.log(sym)
                                             var arbWins = {}
                                             var tokWin = {}
                                             var arbWinR2s = {}
@@ -219,7 +219,7 @@ bal = bal * prices[coinGeckoNames[tok]]
 
 
                                             var arbpotential = 100 * ((parseFloat(tx1price2) / parseFloat(tx1price) - 1))
-                                            console.log('arb potential: ' + arbpotential + ': ' + tradeTokens[tok])
+                               //             console.log('arb potential: ' + arbpotential + ': ' + tradeTokens[tok])
                                         arbPots[token['symbol']].push(arbpotential)
                                         //console.log(arbPots[token['symbol']])
                                         if (arbpotential > arbWins[token['symbol']] && arbpotential < maxArb){
@@ -404,14 +404,19 @@ async function doTx(transaction){
             }
         });
 }
-var thelength = 450 * tradeTokens.length
+var thelengthc = 0
+var thelength
 async function start() {
-    r = await rp('https://api.totle.com/tokens')
+    r = await rp('https://api.0x.org/swap/v0/tokens')
     r = JSON.parse(r)
 
     tokens = []
-    for (var token in r['tokens']) {
-        tokens.push(r['tokens'][token])
+    for (var token in r['records']) {
+        thelengthc++
+        thelength = (thelengthc * tradeTokens.length) / 1.5
+        console.log(thelength)
+        console.log(r['records'][token])
+        tokens.push(r['records'][token])
     }
 
 
