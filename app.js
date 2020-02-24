@@ -47,7 +47,6 @@ console.log(data)
 for (var c in  data.data){
     prices[c] = data.data[c].eth
 }
-prices['compound-dai'] = prices['compound-sai'] / 1.045310179747434
 console.log(prices)
 }
 catch (err){
@@ -123,7 +122,7 @@ bal = bal * prices[coinGeckoNames[tok]]
                 var payload = {
                     "swap": {
                         "sourceAsset": tradeTokens[thetoken],
-                        "destinationAsset": 'DAI',// token['address'],
+                        "destinationAsset": token['address'],
                         "sourceAmount": Math.floor(tradePercent * winBalDec),
                         "maxMarketSlippagePercent": "50",
                         "maxExecutionSlippagePercent": "10"
@@ -154,14 +153,14 @@ bal = bal * prices[coinGeckoNames[tok]]
                                             var tokWin = {}
                                             var arbWinR2s = {}
                                 var arbPots = {}
-                                tokWin[sym] = ""
-                                arbPots[sym] = []
-                                arbWins[sym] = -1000
-                                arbWinR2s[sym] = [];
+                                tokWin[token['symbol']] = ""
+                                arbPots[token['symbol']] = []
+                                arbWins[token['symbol']] = -1000
+                                arbWinR2s[token['symbol']] = [];
                                 for (var tok in tradeTokens){
                                 var payload2 = {
                                     "swap": {
-                                        "sourceAsset": 'DAI',//token['address'],
+                                        "sourceAsset": token['address'],
                                         "destinationAsset": tradeTokens[tok],
                                         "sourceAmount": total,
                                         "maxMarketSlippagePercent": "50",
@@ -189,8 +188,8 @@ bal = bal * prices[coinGeckoNames[tok]]
 
 
                                             
-                                            if (syms[sym] == undefined) {
-                                                syms[sym] = 0
+                                            if (syms[token['symbol']] == undefined) {
+                                                syms[token['symbol']] = 0
                                             }
                                             var fee
                                             var fee2
@@ -220,22 +219,23 @@ bal = bal * prices[coinGeckoNames[tok]]
 
                                             var arbpotential = 100 * ((parseFloat(tx1price2) / parseFloat(tx1price) - 1))
                                             //console.log('arb potential: ' + arbpotential)
-                                        arbPots[sym].push(arbpotential)
-                                        //console.log(arbPots[sym])
-                                        if (arbpotential > arbWins[sym]){
-                                            tokWin[sym] = tradeTokens[tok]
-                                            arbWins[sym] = arbpotential
-                                            arbWinR2s[sym] = r2
+                                        arbPots[token['symbol']].push(arbpotential)
+                                        //console.log(arbPots[token['symbol']])
+                                        if (arbpotential > arbWins[token['symbol']]){
+                                            tokWin[token['symbol']] = tradeTokens[tok]
+                                            arbWins[token['symbol']] = arbpotential
+                                            arbWinR2s[token['symbol']] = r2
                                         
                                         }
                                         }
                                     }
                                         }      
-                                        if (arbWins[sym] != -1000){
-                                    console.log('arbWin: ' + sym + ': ' + arbWins[sym] + ', tok: ' + tokWin[sym])
+                                        console.log(arbWins)
+                                        if (arbWins[token['symbol']] != -1000){
+                                    console.log('arbWin: ' + sym + ': ' + arbWins[token['symbol']] + ', tok: ' + tokWin[token['symbol']])
                                         }
-                                if (arbWins[sym] > biggest) {
-                                                biggest = arbWins[sym]
+                                if (arbWins[token['symbol']] > biggest) {
+                                                biggest = arbWins[token['symbol']]
                                             }
                                             if (!doable.includes(sym)){
                                                 doable.push(sym)
@@ -245,16 +245,16 @@ bal = bal * prices[coinGeckoNames[tok]]
                                             
                                             console.log('tradeable length: ' + (doable.length))
                                             arb = false
-                                            if (arbWins[sym] > 0.05) {
-                                                console.log(arbWins[sym])
+                                            if (arbWins[token['symbol']] > 0.05) {
+                                                console.log(arbWins[token['symbol']])
                                                 console.log(tx1price2)
                                                 console.log(tx1price)
                                                 arb = true
                                             }
-                                            if (syms[sym] == undefined) {
-                                                syms[sym] = 0
+                                            if (syms[token['symbol']] == undefined) {
+                                                syms[token['symbol']] = 0
                                             }
-                                            if (arbWins[sym] < 0.05 && sym[syms] > 0) {
+                                            if (arbWins[token['symbol']] < 0.05 && sym[syms] > 0) {
                                                 try {
                                                     ignore.splice(ignore.indexOf(sym), 1)
 
@@ -264,19 +264,19 @@ bal = bal * prices[coinGeckoNames[tok]]
                                                 }
 
                                             }
-                                            if (arbWins[sym] > 0.05 && syms[sym] == 0) {
+                                            if (arbWins[token['symbol']] > 0.05 && syms[token['symbol']] == 0) {
                                                 ignore.push(sym)
 
 
                                                 console.log('length ignore ' + ((ignore.length)))
                                             }
-                                            if ((arbWins[sym] > 0.05 && syms[sym] != 0 && !ignore.includes(sym))){// || first && arbWins[sym] > -1.5) {
+                                            if ((arbWins[token['symbol']] > 0.05 && syms[token['symbol']] != 0 && !ignore.includes(sym))){// || first && arbWins[token['symbol']] > -1.5) {
                                                 first = false
                                                 console.log('arb! ' + sym)
                                                 fs.writeFile("./arbs.json", JSON.stringify({
                                                     'platform': 'totle',
                                                     'symbol': sym,
-                                                    'arb': arbWins[sym]
+                                                    'arb': arbWins[token['symbol']]
                                                 }) + '\n', function(err) {
                                                     if (err) {
                                                         return console.log(err);
@@ -285,7 +285,7 @@ bal = bal * prices[coinGeckoNames[tok]]
                                                 });
 
                                                 var tx1 = (r['response']['transactions'])
-                                                var tx = (arbWinR2s[sym]['response']['transactions'])
+                                                var tx = (arbWinR2s[token['symbol']]['response']['transactions'])
 var abc = 0
 for (var t in tx1){
                                                     setTimeout(async function(){
@@ -324,9 +324,9 @@ abc++
                                                 
 
                                             }
-                                            syms[sym] = syms[sym] + 1
+                                            syms[token['symbol']] = syms[token['symbol']] + 1
                                             
-                                            console.log('occurences of symbol: ' + syms[sym])
+                                            console.log('occurences of symbol: ' + syms[token['symbol']])
                                         }
                             }                                       else {
                                             if (r2['response']['message'] != undefined){
@@ -342,6 +342,7 @@ abc++
                                         }
                                     
                                 } else {
+                                    if (r2['response'] != undefined){
                                     if (r2['response']['message'].indexOf('is not tradable') != -1) {
                                         blacklist.push(token['symbol'])
 
@@ -349,6 +350,7 @@ abc++
                                           blacklist.push(token['symbol'])
                                                 thelength--
                                         console.log(r2)
+                                    }
                                     }
                                 }
                             
