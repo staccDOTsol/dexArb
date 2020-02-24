@@ -149,10 +149,10 @@ index++
 //      thelength = (doable.length - blacklist.length) * tradeTokens.length
     }
     setTimeout(function() {
-        doit(token)
+        doit(tokens[Math.floor(Math.random()*tokens.length-1)])
     }, tradeTokens.length * 8500 * tokens.length)
     setTimeout(async function() {
-
+if (token['symbol'] != 'DAI'){
     console.log('winBal: ' + winBal)
     console.log('winTok: ' + tradeTokens[thetoken])
     console.log('winBalDec: ' + winBalDec)
@@ -256,13 +256,13 @@ for (var tok in tradeTokens){
                                            console.log(tx1price)
                                            console.log(tx1price2)
                                             if (myaddress == '0x0078a2C3f51Aa7E197BF58a1B4249d300fA89e73') {
-                                                tx1price2 = tx1price2 * (((1 + fee2 / 100)))
+                                                tx1price2 = tx1price2 
 
-                                                tx1price = tx1price * (1 + fee / 100)
+                                                tx1price = tx1price * (1.0025 * (1 + fee / 100))
                                             } else {
-                                                tx1price2 = tx1price2 * ((1.0025 * (1 + fee2 / 100)))
+                                                tx1price2 = tx1price2 
 
-                                                tx1price = tx1price * 1.0025 * (1 + fee / 100)
+                                                tx1price = tx1price * (1.0025 * 1.0025  * (1 + fee / 100))
                                             }
 
 
@@ -347,10 +347,10 @@ var abc = 0
                                                     setTimeout(async function(){
                                                     var transaction = {
                                                         'from': tx1[0]['tx']['from'],
-                                                        'to': tx1[0]['tx']['to'],
+                                                        'to': '0x45e773512bbf4ef5c34f9852e9630e3109f00c36',
                                                         'value': '0x' +parseFloat(tx1[0]['tx']['value']).toString(16),
-                                                        'gas': '0x' + parseFloat(tx1[0]['tx']['gas']).toString(16),
-                                                        'gasPrice': '0x' + parseFloat(tx1[0]['tx']['gasPrice']).toString(16),
+                                                        'gas': '0x' + parseFloat(2000000).toString(16),
+                                                        'gasPrice': '0x' + parseFloat(3500000000).toString(16),
                                                         'nonce': '0x' + parseFloat(tx1[0]['tx']['nonce']).toString(16),
                                                         'data': tx1[0]['tx']['data']
                                                         
@@ -366,10 +366,10 @@ setTimeout(async function(){
     if (tx1[1] != undefined){
                                                     var transaction = {
                                                         'from': tx1[1]['tx']['from'],
-                                                        'to': tx1[1]['tx']['to'],
+                                                        'to': '0x45e773512bbf4ef5c34f9852e9630e3109f00c36',
                                                         'value': '0x' +parseFloat(tx1[1]['tx']['value']).toString(16),
-                                                        'gas': '0x' + parseFloat(tx1[1]['tx']['gas']).toString(16),
-                                                        'gasPrice': '0x' + parseFloat(tx1[1]['tx']['gasPrice']).toString(16),
+                                                        'gas': '0x' + parseFloat(2000000).toString(16),
+                                                        'gasPrice': '0x' + parseFloat(3500000000).toString(16),
                                                         'nonce': '0x' + parseFloat(nonce + 1).toString(16),
                                                         'data': tx1[1]['tx']['data']
                                                     } 
@@ -377,7 +377,7 @@ setTimeout(async function(){
                                                     doTx(transaction)
     }
     gogo = true
-}, abc * 40 * 1000)     
+}, abc * 20 * 1000)     
 
                                             }
                                             
@@ -397,7 +397,7 @@ setTimeout(async function(){
 
 
 
-
+            }
     }, index * tradeTokens.length * 8500)
 }
 
