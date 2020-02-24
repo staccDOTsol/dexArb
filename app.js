@@ -39,7 +39,7 @@ async function cg(){
     
     try{
 let data = await CoinGeckoClient.simple.price({
-    ids: ['ethereum','dai','wrapped-bitcoin','compound-dai', 'sai','compound-sai'],
+    ids: coinGeckoNames,
     vs_currencies: [ 'eth'],
 });
 console.log(data)
@@ -67,7 +67,7 @@ setInterval(function(){
 async function doit(token) {
     
     if (doable.length > 10){
-        thelength = doable.length * tradeTokens.length
+        thelength = (doable.length - blacklist.length) * tradeTokens.length
     }
     setTimeout(function() {
         doit(token)
@@ -231,10 +231,14 @@ bal = bal * prices[coinGeckoNames[tok]]
                                     }
                                         }      
                                         console.log(arbWins)
-                                        if (arbWins[token['symbol']] != -1000){
+                                        if (arbWins[token['symbol']] != -1000 && arbWins[token['symbol']] < 200){
                                     console.log('arbWin: ' + sym + ': ' + arbWins[token['symbol']] + ', tok: ' + tokWin[token['symbol']])
+                                        } else {
+                                              blacklist.push(token['symbol'])
+                                                thelength--
+                                        doable.splice(doable.indexOf(token['symbol']),1)
                                         }
-                                if (arbWins[token['symbol']] > biggest) {
+                                if (arbWins[token['symbol']] > biggest && arbWins[token['symbol']] < 200) {
                                                 biggest = arbWins[token['symbol']]
                                             }
                                             if (!doable.includes(sym)){
@@ -342,14 +346,20 @@ abc++
                                         }
                                     
                                 } else {
+                                    if (r2 != undefined){
                                     if (r2['response'] != undefined){
                                     if (r2['response']['message'].indexOf('is not tradable') != -1) {
-                                        blacklist.push(token['symbol'])
-
+                                          blacklist.push(token['symbol'])
+                                                thelength--
+                                        
                                     } else {
                                           blacklist.push(token['symbol'])
                                                 thelength--
-                                        console.log(r2)
+                                                                            }
+                                    }else {
+                                          blacklist.push(token['symbol'])
+                                                thelength--
+                                            
                                     }
                                     }
                                 }
