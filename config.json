@@ -1,6 +1,7 @@
 {"gethIPC": "http://127.0.0.1:8545",
 "myaddress": "0x2631560Ab696a4562C719fB57327844B972603BA",
 "tradePercent": 0.9,
+"maxArb": 200,
 "tradeTokens": ["ETH", "DAI", "wBTC", "SAI", "cSAI", "MKR", "USDC", "UBT", "KNC", "USDT", "LINK"],
 "coinGeckoNames": ["ethereum", "dai", "wrapped-bitcoin", "sai", "compound-sai", "maker", "usd-coin",
 "unibright","kyber-network", "tether", "chainlink"],

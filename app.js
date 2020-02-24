@@ -8,6 +8,7 @@ var first = true
 
 var p = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 var doable = []
+var maxArb = p['maxArb']
 var gethIPC = p['gethIPC']
 var myaddress = p['myaddress']
 var tradeTokens = p['tradeTokens']
@@ -218,10 +219,10 @@ bal = bal * prices[coinGeckoNames[tok]]
 
 
                                             var arbpotential = 100 * ((parseFloat(tx1price2) / parseFloat(tx1price) - 1))
-                                            //console.log('arb potential: ' + arbpotential)
+                                            console.log('arb potential: ' + arbpotential + ': ' + tradeTokens[tok])
                                         arbPots[token['symbol']].push(arbpotential)
                                         //console.log(arbPots[token['symbol']])
-                                        if (arbpotential > arbWins[token['symbol']]){
+                                        if (arbpotential > arbWins[token['symbol']] && arbpotential < maxArb){
                                             tokWin[token['symbol']] = tradeTokens[tok]
                                             arbWins[token['symbol']] = arbpotential
                                             arbWinR2s[token['symbol']] = r2
@@ -234,10 +235,14 @@ bal = bal * prices[coinGeckoNames[tok]]
                                         if (arbWins[token['symbol']] != -1000 && arbWins[token['symbol']] < 200){
                                     console.log('arbWin: ' + sym + ': ' + arbWins[token['symbol']] + ', tok: ' + tokWin[token['symbol']])
                                         } else {
-                                              blacklist.push(token['symbol'])
+console.log('badarb: ' + sym + ': ' + arbWins[token['symbol']] + ', tok: ' + tokWin[token['symbol']])
+                                                                        
+                                    blacklist.push(token['symbol'])
                                                 thelength--
                                         doable.splice(doable.indexOf(token['symbol']),1)
                                         }
+                                        
+                                        
                                 if (arbWins[token['symbol']] > biggest && arbWins[token['symbol']] < 200) {
                                                 biggest = arbWins[token['symbol']]
                                             }
@@ -399,7 +404,7 @@ async function doTx(transaction){
             }
         });
 }
-var thelength = 250 * tradeTokens.length
+var thelength = 450 * tradeTokens.length
 async function start() {
     r = await rp('https://api.totle.com/tokens')
     r = JSON.parse(r)
