@@ -413,7 +413,7 @@ async function start() {
     tokens = []
     for (var token in r['records']) {
         thelengthc++
-        thelength = (thelengthc * tradeTokens.length) / 1.5
+        thelength = (thelengthc * tradeTokens.length) / 1
         console.log(thelength)
         console.log(r['records'][token])
         tokens.push(r['records'][token])
