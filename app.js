@@ -8,7 +8,7 @@ var first = true
 
 var p = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 var doable = []
-var maxArb = p['maxArb']
+var maxArb = p['maxArb']    
 var gethIPC = p['gethIPC']
 var myaddress = p['myaddress']
 var tradeTokens = p['tradeTokens']
@@ -38,11 +38,7 @@ var winBalDec
 var thetoken
 var gogo = true
 async function cg(){
-    var url = 'https://api.totle.com/swap'
-                var headers = {
-                    'content-type': 'application/json',
-                    "Authorization": "Bearer " + 'd09529fa-23b5-456b-996b-d141ce5d4640'
-                }
+   
                 var cCoins = ['cDAI', 'cSAI', 'cUSDC', 'cETH', 'cBAT', 'cREP', 'cWBTC', '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407']
                 var cNames = ["compound-dai", "compound-sai", "compound-usd-coin",'compound-ether', 'compound-basic-attention-token', 'compound-augur', 'compound-wrapped-bitcoin', 'compound-0x'] 
                     for (var c in tradeContractAddresses){
@@ -52,17 +48,16 @@ async function cg(){
         
             
         var r = await rp({uri: "https://api.coingecko.com/api/v3/coins/ethereum/contract/" + tradeContractAddresses[c], json: true})
+        
         r = r.market_data.current_price.eth
+        console.log(r)
         prices[coinGeckoNames[c]] = r
-        
-        }
-    }
-    prices['ethereum'] = 1
-        
-                for (var c in cCoins){
-                    console.log(cCoins[c])
-                    if ((cCoins[c]) in tradeContractAddresses){
-    var payload2 = {
+         var url = 'https://api.1inch.exchange/v3.0/137/quote?fromTokenAddress=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&toTokenAddress=' + tradeContractAddresses[c]  + '&amount=' + (1 * Math.pow(10, 8)).toString()
+                var headers = {
+                    'content-type': 'application/json',
+                    "Authorization": "Bearer " + 'd09529fa-23b5-456b-996b-d141ce5d4640'
+                }
+                    var payload2 = {
                                     "swap": {
                                         "sourceAsset": cCoins[c],
                                         "destinationAsset": 'ETH',
@@ -73,19 +68,23 @@ async function cg(){
                                     'apiKey': 'd09529fa-23b5-456b-996b-d141ce5d4640',
                                     'partnerContract': '0x0a92bcab3019839ea1a8349fa5c940e38e9c88b9'
                                 }
-
                                  options = {
-                                        method: 'POST',
+                                        method: 'GET',
                                         uri: url,
                                         body: payload2,
                                         headers: headers,
                                         json: true
                                     };
                                     var r2 = await rp(options)
+                                    console.log(r2.response)
                                     tradeContractAddresses[cCoins[c]] = r2.response.summary[0].sourceAsset.address  
                                     prices[cNames[c]] = parseFloat(r2.response.summary[0].rate)
-                }
-                }
+                
+        }
+    }
+    prices['ethereum'] = 1
+        
+              
 
     
 console.log(prices)
@@ -158,7 +157,7 @@ if (token['symbol'] != 'DAI'){
     console.log('winBalDec: ' + winBalDec)
     
             try {
-                var url = 'https://api.totle.com/swap'
+                var url = 'https://api.1inch.exchange/v3.0/137/quote?fromTokenAddress=' + tradeTokens[thetoken] + '&toTokenAddress=' + token['address'] + '&amount=' + (Math.floor(tradePercent * winBalDec)).toString()
                 var headers = {
                     'content-type': 'application/json',
                     "Authorization": "Bearer " + 'd09529fa-23b5-456b-996b-d141ce5d4640'
@@ -177,7 +176,7 @@ var payload = {
                 }
                 if (!blacklist.includes(token['symbol']) && gogo) {
                     var options = {
-                        method: 'POST',
+                        method: 'GET',
                         uri: url,
                         body: payload,
                         headers: headers,
@@ -229,7 +228,7 @@ for (var tok in tradeTokens){
                 }
                 if (!blacklist.includes(token['symbol']) && gogo) {
                     var options = {
-                        method: 'POST',
+                        method: 'GET',
                         uri: url,
                         body: payload,
                         headers: headers,
@@ -426,7 +425,7 @@ var thelengthc = 0
 var thelength
 var tokens = []
 async function start() {
-    r = await rp('https://api.0x.org/swap/v0/tokens')
+    r = await rp('https://api.1inch.exchange/v3.0/1/tokens')
     r = JSON.parse(r)
 
     tokens = []
